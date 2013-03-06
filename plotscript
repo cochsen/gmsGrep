@@ -1,0 +1,7 @@
+set xlabel "Search Step" 
+set ylabel "Energy (Hartrees)" 
+set title "Geometry Optimization" 
+plot "temp.dat" using 1:2 with lines 
+set terminal png 
+set output "temp.png" 
+replot
