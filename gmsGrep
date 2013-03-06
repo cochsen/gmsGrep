@@ -1,0 +1,158 @@
+# GAMESS report script 0.1 
+
+
+# HTML document setup 
+echo $1 | mawk 'BEGIN {  {printf("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n")} 
+		{printf("<HTML>\n")} 
+		{printf("<HEAD>\n")} 
+			{printf("\t<script type=\"text/javascript\" src=\"./Jmol.js\"></script>\n")} 
+			{printf("\t<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=utf-8\">\n")} 
+			{printf("\t<TITLE>gmGrep - %s Report</TITLE>\n", $1)} 
+			{printf("\t<META NAME=\"GENERATOR\" CONTENT=\"(Linux)\">\n")} 
+			{printf("\t<META NAME=\"CREATED\" CONTENT=\"20090723;11483200\">\n")} 
+			{printf("\t<META NAME=\"CHANGED\" CONTENT=\"20090723;14323700\">\n")} 
+			{printf("\t<STYLE TYPE=\"text/css\">\n")} 
+			} 
+
+BEGIN {		{printf("\t<!--\n")} 
+				{printf("\t\t@page { margin: 0.80in }\n")} 
+				{printf("\t\tP { margin-bottom: 0.08in }\n")} 
+				{printf("\t\tTD P { margin-bottom: 0in }\n")} 
+				{printf("\t\tA:link { so-language: zxx }\n")} 
+			{printf("\t-->\n")} 
+			{printf("\t</STYLE>\n")} 
+		{printf("</HEAD>\n")} }'; 
+
+# Title, output file name, report creation date/time, job start/end date/time, host 
+cat $1 | mawk '	/^cp / { 
+		{printf("<BODY LANG=\"en-US\" DIR=\"LTR\">\n")} 
+		{printf("<P STYLE=\"margin-bottom: 0in\"><FONT COLOR=\"#280099\"><FONT FACE=\"Arial\">")}	 
+		{printf("<FONT SIZE=5>Gamess Report</FONT><FONT SIZE=4> - output file: %s </FONT>", $2)} 
+		{printf("</FONT></FONT></P>\n")} }'; 
+
+date | mawk ' 
+		{printf("<FONT FACE=\"Arial\">\n")} 
+		{printf("<FONT SIZE=3>Report Creation Date: %s</FONT></FONT><BR>\n", $0)}'; 
+
+cat $1 | mawk '	/operating system/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>\nJob start date/time: %s %s %s %s %s %s</FONT></FONT><BR>\n", $6, $7, $8, $9, $10, $11)} }		/TERMINATED/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>\nJob end date/time: %s %s %s %s %s</FONT></FONT><BR>\n", $6, $7, $8, $9, $10)} } 
+		/host/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>Host: %s</FONT></FONT><BR><BR>\n", $NF)} }'; 
+
+# GAMESS input 
+
+mawk '	BEGIN { {printf("<P STYLE=\"margin-bottom: 0in\"><FONT COLOR=\"#280099\"><FONT FACE=\"Arial\">")} 
+		{printf("<U>Input Parameters:</U></FONT></FONT></P>\n")} }' ; 
+
+cat $1 | grep 'INPUT CARD' | grep '\$END' | mawk '{line[NR] = $0}		 
+
+	END { for(i=1; i<=NR; i++) { 
+		printf("<FONT FACE=\"Arial\"><FONT SIZE=3>")		 
+		printf("%s</FONT></FONT><BR>\n", line[i])} }'; 
+
+# BASIS OPTIONS		 
+
+mawk ' BEGIN {	{printf("<P STYLE=\"margin-bottom: 0in\"><FONT COLOR=\"#280099\">")} 
+		{printf("<FONT FACE=\"Arial\"><U>Basis Options</U></FONT></FONT></P>\n")} }'; 
+
+cat $1 | mawk ' /(IGAUSS)/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>\n%s</FONT></FONT><BR>\n", $0)} } 
+		/N.FUNC/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>\n%s</FONT></FONT><BR>\n", $0)} }'; 
+
+# Assigned Parameters 
+
+mawk ' BEGIN {	{printf("<P STYLE=\"margin-bottom: 0in\"><FONT COLOR=\"#280099\">")} 
+		{printf("<FONT FACE=\"Arial\"><U>Assigned Parameters</U></FONT></FONT></P>\n")} }'; 
+
+cat $1 | mawk '	/POINT GROUP OF THE MOLECULE/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>Point group of molecule: %s</FONT></FONT><BR>\n", $NF)} } 
+		/PRINCIPAL AXIS/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>Order of Principal axis: %s</FONT></FONT><BR>\n", $NF)} } 
+		/BASIS SET SHELLS/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>Total number of basis set shells: %s</FONT></FONT><BR>\n", $NF)} } 
+		/CARTESIAN GAUSSIAN BASIS/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>Number of Cartesian Gaussian basis functions: %s</FONT></FONT><BR>\n", $NF)} }		 
+		/NUMBER OF ELECTRONS/ { 
+		{printf("<FONT FACE=\"Arial\">")}			 
+		{printf("<FONT SIZE=3>Number of electrons: %s</FONT></FONT><BR>\n", $NF)} }		 
+		/CHARGE OF MOLECULE/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>Charge of molecule: %s</FONT></FONT><BR>\n", $NF)} } 
+		/SPIN MULTIPLICITY/ { 
+		{printf("<FONT FACE=\"Arial\">")} 
+		{printf("<FONT SIZE=3>Spin multiplicity: %s</FONT></FONT><BR>\n", $NF)} }		 
+		/TOTAL NUMBER OF ATOMS/ { 
+		{printf("<FONT FACE=\"Arial\">")}			 
+		{printf("<FONT SIZE=3>Total number of atoms: %s</FONT></FONT><BR>\n", $NF)} }	 
+		/THE NUCLEAR REPULSION/ { 
+		{printf("<FONT FACE=\"Arial\">")}			 
+		{printf("<FONT SIZE=3>Nuclear repulsion energy: %.8f hartrees</FONT></FONT><BR>\n", $NF)} }'	 
+
+# Calculation Results 
+
+mawk ' BEGIN {	{printf("<P STYLE=\"margin-bottom: 0in\"><FONT COLOR=\"#280099\">")} 
+		{printf("<FONT FACE=\"Arial\"><U>Optimization Results</U></FONT></FONT></P>\n")} }'; 
+
+# Number of geometry search steps 
+cat $1 | grep 'NSERCH' | grep 'ENERGY' | mawk 'NR == $NR 
+	END {	{printf("<FONT FACE=\"Arial\">Nuclear coordinate geometry search")} 
+		{printf(" steps: %d</FONT></FONT><BR>\n", $1, $2)} 
+		{printf("<FONT FACE=\"Arial\">Optimized geometry energy: %.8f hartrees", $4)} 
+		{printf("</FONT></FONT><BR>\n")} }'; 
+
+cat $1 | grep 'MAXIMUM GRADIENT' | mawk 'NR == $NR 
+END {		{printf("<FONT FACE=\"Arial\">Maximum gradient = ")} 
+		{printf("%.8f</FONT></FONT><BR>\n", $4)} 
+		{printf("<FONT FACE=\"Arial\">RMS gradient = %.8f hartrees", $8)} 
+		{printf("</FONT></FONT><BR><BR>\n")} }'; 
+
+cat $1 | grep 'NSERCH' | grep 'ENERGY' | mawk '{print $2, $4}' > temp.dat; 
+
+gnuplot plotscript; 
+mv temp.png $1.png; rm temp.dat; 
+
+echo $1 | mawk 'END {printf("<img src=\"./%s.png\n\" /><BR><BR><BR>", $1)}' 
+
+mawk ' BEGIN {	{printf("<P STYLE=\"margin-bottom: 0in\"><FONT COLOR=\"#280099\">")} 
+		{printf("<FONT FACE=\"Arial\"><U>Energy Components</U></FONT></FONT></P>\n")} }'; 
+
+cat $1 | grep 	'WAVEFUNCTION NORMALIZATION' | mawk 'NR == $NR 
+END	      	{printf("<FONT FACE=\"Arial\">Wavefunction normalization= %.8f</FONT><BR>\n", $NF)}' 
+ 
+cat $1 | grep	'ONE ELECTRON ENERGY' | mawk 'NR == $NR 
+END		{printf("<FONT FACE=\"Arial\">One electron energy= %.8f</FONT><BR>\n", $NF)}' 
+cat $1 | grep	'TWO ELECTRON ENERGY' | mawk 'NR == $NR 
+END		{printf("<FONT FACE=\"Arial\">Two electron energy= %.8f</FONT><BR>\n", $NF)}' 
+cat $1 | grep	'NUCLEAR REPULSION ENERGY' | mawk 'NR == $NR 
+END		{printf("<FONT FACE=\"Arial\">Nuclear repulsion energy= %.8f</FONT><BR>\n", $NF)}' 
+cat $1 | grep	'TOTAL ENERGY' | mawk 'NR == $NR 
+END		{printf("<FONT FACE=\"Arial\">Total Energy= %.8f</FONT><BR>\n", $NF)}' 
+cat $1 | grep	'TOTAL POTENTIAL ENERGY' | mawk 'NR == $NR 
+END		{printf("<FONT FACE=\"Arial\">Total potential energy= %.8f</FONT><BR>\n", $NF)}' 
+cat $1 | grep	'TOTAL KINETIC ENERGY' | mawk 'NR == $NR 
+END		{printf("<FONT FACE=\"Arial\">Total kinetic energy= %.8f</FONT><BR>\n", $NF)}' 
+cat $1 | grep	'TOTAL WALL CLOCK TIME' | mawk 'NR == $NR 
+END		{printf("<FONT FACE=\"Arial\">Total wall clock time= %.8f</FONT><BR><BR><BR>\n", $NF)}' 
+
+mawk ' BEGIN {	{printf("<P STYLE=\"margin-bottom: 0in\"><FONT COLOR=\"#280099\">")} 
+		{printf("<FONT FACE=\"Arial\"><U>Molecular Structure 3D Graph</U></FONT></FONT></P>\n")} }'; 
+
+echo $1 | mawk ' END { {printf("<script type=\"text/javascript\">")} 
+		{printf("jmolInitialize(\"./\");\n")} 
+		{printf("jmolApplet(400, \"load %s\");\n", $1)} 
+		{printf("</script><BR><BR><BR><BR>\n")} 
+
+		{printf("<FONT FACE\"Arial\">gmsGrep Author: Christopher G Ochsenreither</FONT><BR>")}			 
+	{printf("</BODY>\n")} 
+{printf("</HTML>\n")} }'
